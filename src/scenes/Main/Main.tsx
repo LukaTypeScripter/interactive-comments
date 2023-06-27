@@ -1,214 +1,298 @@
-import React, { useState } from 'react'
-import { AddComment, AddCommenttextArea, CommentBOdy, CommentBtn, CommentBtnDown, CommentContainer, CommentContent, CommentFooter, CommentHeader, CommentPostedTime, CommentVotes, CommentVotesDown, Commentsinside, Mains, PlusAndMinusBtn,  ProfilePIc,  ProfilePic,  ProfilePicDown,  ReplyBtn,  ReplyBtnDown,  SendBtnCont,  Username,  VotesCouter, AddBtrn, ReplyCOntainer, CommentCont, YouTag, ReplyBtnEdit, DElateBtn } from './styles/main'
-import {data} from '../../../data'
-import currentUser from '../../images/avatars/image-juliusomo.png'
-import {v4 as uuidv4} from 'uuid';
+import React, { useState } from "react";
+import { AddBtrn, AddComment, AddCommenttextArea, CommentContainer, Mains, ProfilePic, ProfilePicDown, SendBtnCont } from "./styles/main";
+import { data } from "../../../data";
+import currentUser from "../../images/avatars/image-juliusomo.png";
+import Comments from "../comments/Comments";
+import CommentAdd from "../CommentAdd/CommentAdd";
+import Reply from "../reply/Reply";
+import DelateModal from "../DelateModal/DelateModal";
+
+type Image = {
+  png: string;
+  webp: string;
+};
+
 type User = {
-    image: {
-      png: string;
-      webp: string;
-    };
-    username: string;
-  };
-  
-  type Comment = {
-    id: number;
-    content: string;
-    createdAt: string;
-    score: number;
-    user: User;
-    replies: Comment[]; // Add 'replies' property of type Comment[]
-  };
-  
-  type CommentData = {
-    currentUser: {
-      image: {
-        png: string;
-        webp: string;
-      };
-      username: string;
-    };
-    comments: Comment[];
-  };
+  image: Image;
+  username: string;
+};
+
+type Reply = {
+  id: number;
+  content: string;
+  createdAt: string;
+  score: number;
+  replyingTo?: string;
+  user: User;
+  isEditing?: boolean;
+};
+
+type Comment = {
+  id: number;
+  content: string;
+  createdAt: string;
+  score: number;
+  user: User;
+  replies: Reply[];
+};
+
+type CommentData = {
+  currentUser: User;
+  comments: Comment[];
+};
+
 function Main() {
-    const [commentData,setCommentData] = useState(data)
-    const [replyToComment, setReplyToComment] = useState(0);
-    const [newComment, setNewComment] = useState("");
-
-
-    const addReplyToComment = (commentId: number) => {
-      const newReply = {
-        id: generateNumericId(8),
-        content: newComment,
-        createdAt: new Date().toISOString(),
-        score: 0,
-        user: {
-          image: {
-            png: `${currentUser}`,
-            webp: "",
-          },
-          username: "juliusomo",
+  const [commentData, setCommentData] = useState<CommentData>(data);
+  const [replyToComment, setReplyToComment] = useState(0);
+  const [newComment, setNewComment] = useState("");
+  const [isOpenModal,setIsOpenModal] = useState(false);
+  const [selectedCommentId, setSelectedCommentId] = useState(0);
+  const [selectedReplyId, setSelectedReplyId] = useState(0);
+  const [selectedReplyToDelete, setSelectedReplyToDelete] = useState<Reply | null>(null);
+  const [globalContent,setGlobalContent] = useState("")
+  //create new Reply
+  const addReplyToComment = (commentId: number) => {
+    setSelectedCommentId(commentId);
+    const newReply = {
+      id: generateNumericId(8),
+      content: newComment,
+      createdAt: new Date().toISOString(),
+      score: 0,
+      user: {
+        image: {
+          png: `${currentUser}`,
+          webp: "",
         },
-        replyingTo: commentId.toString(),
-      };
-  
+        username: "juliusomo",
+      },
+      replyingTo: commentId.toString(),
+    };
+    setSelectedReplyId(newReply.id)
+    setCommentData((prevData) => {
+      const updatedComments = prevData.comments.map((comment) => {
+        if (comment.id === commentId) {
+          const updatedComment = {
+            ...comment,
+            replies: [...comment.replies, newReply],
+          };
+          return updatedComment;
+        }
+        return comment;
+      });
+
+      return { ...prevData, comments: updatedComments };
+    });
+
+    setReplyToComment(0);
+    setNewComment("");
+  };
+
+//added new properity in my json isEditing
+  const handleReplyEdit = (commentId: number, replyId: number) => {
+    setCommentData((prevData) => {
+      const updatedComments = prevData.comments.map((comment) => {
+        if (comment.id === commentId) {
+          const updatedReplies = comment.replies.map((reply) => {
+            if (reply.id === replyId) {
+              return { ...reply, isEditing: true };
+            }
+            return reply;
+          });
+          return { ...comment, replies: updatedReplies };
+        }
+        return comment;
+      });
+      return { ...prevData, comments: updatedComments };
+    });
+  };
+  //finding specific comment and then save it
+  const handleReplySave = (commentId: number, replyId: number) => {
+    setCommentData((prevData) => {
+      const updatedComments = prevData.comments.map((comment) => {
+        if (comment.id === commentId) {
+          const updatedReplies = comment.replies.map((reply) => {
+            if (reply.id === replyId) {
+              return { ...reply, isEditing: false };
+            }
+            return reply;
+          });
+          return { ...comment, replies: updatedReplies };
+        }
+        return comment;
+      });
+      return { ...prevData, comments: updatedComments };
+    });
+  };
+//editing previes values
+  const handleReplyEdits = (
+    commentId: number,
+    replyId: number,
+    content: string
+  ) => {
+    setCommentData((prevData) => {
+      const updatedComments = prevData.comments.map((comment) => {
+        if (comment.id === commentId) {
+          const updatedReplies = comment.replies.map((reply) => {
+            if (reply.id === replyId) {
+              return { ...reply, content };
+            }
+            return reply;
+          });
+          return { ...comment, replies: updatedReplies };
+        }
+        return comment;
+      });
+      return { ...prevData, comments: updatedComments };
+    });
+  };
+  //findinf selected comment and reply 
+  const handleReplyDelete = (commentId: number, replyId: number) => {
+    const selectedComment = commentData.comments.find(
+      (comment) => comment.id === commentId
+    );
+    const selectedReply = selectedComment?.replies.find(
+      (reply) => reply.id === replyId
+    );
+
+    if (selectedReply) {
+      setSelectedReplyToDelete(selectedReply);
+      setIsOpenModal(true);
+    }
+  };
+  //delating selected reply 
+  const handleConfirmDelete = () => {
+    if (selectedReplyToDelete) {
+      const commentId = selectedCommentId;
+      const replyId = selectedReplyToDelete.id;
       setCommentData((prevData) => {
         const updatedComments = prevData.comments.map((comment) => {
           if (comment.id === commentId) {
-            comment.replies.push(newReply);
+            const updatedReplies = comment.replies.filter(
+              (reply) => reply.id !== replyId
+            );
+            return { ...comment, replies: updatedReplies };
           }
           return comment;
         });
-  
+
         return { ...prevData, comments: updatedComments };
       });
-  
-      setReplyToComment(0);
-      setNewComment("");
+
+      setIsOpenModal(false);
+    }
+  };
+  const addGlobalComment = () => {
+    const newCommentData = {
+      id: generateNumericId(8),
+      content: globalContent,
+      createdAt: new Date().toISOString(),
+      score: 0,
+      user: {
+        image: {
+          png: `${currentUser}`,
+          webp: "",
+        },
+        username: "juliusomo",
+      },
+      replies: [],
     };
+
+    setCommentData((prevData) => {
+      const updatedComments = [...prevData.comments, newCommentData];
+      console.log(updatedComments);
+      return { ...prevData, comments: updatedComments };
+    });
+
+    setGlobalContent("");
+  };
+  
   return (
     <Mains>
-        {commentData.comments.map(comment => (
-           
-            <CommentContainer key={comment.id}>
-                <Commentsinside>
-            <CommentVotes>
-                <PlusAndMinusBtn>
-                <svg width="11" height="11" xmlns="http://www.w3.org/2000/svg"><path d="M6.33 10.896c.137 0 .255-.05.354-.149.1-.1.149-.217.149-.354V7.004h3.315c.136 0 .254-.05.354-.149.099-.1.148-.217.148-.354V5.272a.483.483 0 0 0-.148-.354.483.483 0 0 0-.354-.149H6.833V1.4a.483.483 0 0 0-.149-.354.483.483 0 0 0-.354-.149H4.915a.483.483 0 0 0-.354.149c-.1.1-.149.217-.149.354v3.37H1.08a.483.483 0 0 0-.354.15c-.1.099-.149.217-.149.353v1.23c0 .136.05.254.149.353.1.1.217.149.354.149h3.333v3.39c0 .136.05.254.15.353.098.1.216.149.353.149H6.33Z" fill="#C5C6EF"/></svg>
-    
-                </PlusAndMinusBtn>
-                <VotesCouter>
-                    {comment.score}
-                </VotesCouter>
-                <PlusAndMinusBtn>
-                <svg width="11" height="3" xmlns="http://www.w3.org/2000/svg"><path d="M9.256 2.66c.204 0 .38-.056.53-.167.148-.11.222-.243.222-.396V.722c0-.152-.074-.284-.223-.395a.859.859 0 0 0-.53-.167H.76a.859.859 0 0 0-.53.167C.083.437.009.57.009.722v1.375c0 .153.074.285.223.396a.859.859 0 0 0 .53.167h8.495Z" fill="#C5C6EF"/></svg>
-    
-                </PlusAndMinusBtn>
-            </CommentVotes>
-            <CommentBOdy>
-                <CommentHeader>
-                    <ProfilePIc style={{backgroundImage:`url(${comment.user.image.png})`}}></ProfilePIc>
-                    <Username>{comment.user.username}</Username>
-                    <CommentPostedTime>{comment.createdAt}</CommentPostedTime>
-                    <CommentBtn>
-                        <ReplyBtn>
-                        <svg width="14" height="13" xmlns="http://www.w3.org/2000/svg"><path d="M.227 4.316 5.04.16a.657.657 0 0 1 1.085.497v2.189c4.392.05 7.875.93 7.875 5.093 0 1.68-1.082 3.344-2.279 4.214-.373.272-.905-.07-.767-.51 1.24-3.964-.588-5.017-4.829-5.078v2.404c0 .566-.664.86-1.085.496L.227 5.31a.657.657 0 0 1 0-.993Z" fill="#5357B6"/></svg>
-                        reply
-                        </ReplyBtn>
-                    </CommentBtn>
-                </CommentHeader>
-                <CommentContent>
-              {comment.content}
-                </CommentContent>
-                <CommentFooter>
-                <CommentVotesDown>
-                <PlusAndMinusBtn>
-                <svg width="11" height="11" xmlns="http://www.w3.org/2000/svg"><path d="M6.33 10.896c.137 0 .255-.05.354-.149.1-.1.149-.217.149-.354V7.004h3.315c.136 0 .254-.05.354-.149.099-.1.148-.217.148-.354V5.272a.483.483 0 0 0-.148-.354.483.483 0 0 0-.354-.149H6.833V1.4a.483.483 0 0 0-.149-.354.483.483 0 0 0-.354-.149H4.915a.483.483 0 0 0-.354.149c-.1.1-.149.217-.149.354v3.37H1.08a.483.483 0 0 0-.354.15c-.1.099-.149.217-.149.353v1.23c0 .136.05.254.149.353.1.1.217.149.354.149h3.333v3.39c0 .136.05.254.15.353.098.1.216.149.353.149H6.33Z" fill="#C5C6EF"/></svg>
-    
-                </PlusAndMinusBtn>
-                <VotesCouter>
-                {comment.score}
-                </VotesCouter>
-                <PlusAndMinusBtn>
-                <svg width="11" height="3" xmlns="http://www.w3.org/2000/svg"><path d="M9.256 2.66c.204 0 .38-.056.53-.167.148-.11.222-.243.222-.396V.722c0-.152-.074-.284-.223-.395a.859.859 0 0 0-.53-.167H.76a.859.859 0 0 0-.53.167C.083.437.009.57.009.722v1.375c0 .153.074.285.223.396a.859.859 0 0 0 .53.167h8.495Z" fill="#C5C6EF"/></svg>
-    
-                </PlusAndMinusBtn>
-            </CommentVotesDown>
-                    <CommentBtnDown>
-                        <ReplyBtnDown value={replyToComment} onClick={() =>    setReplyToComment(comment.id)}>
-                        <svg width="14" height="13" xmlns="http://www.w3.org/2000/svg"><path d="M.227 4.316 5.04.16a.657.657 0 0 1 1.085.497v2.189c4.392.05 7.875.93 7.875 5.093 0 1.68-1.082 3.344-2.279 4.214-.373.272-.905-.07-.767-.51 1.24-3.964-.588-5.017-4.829-5.078v2.404c0 .566-.664.86-1.085.496L.227 5.31a.657.657 0 0 1 0-.993Z" fill="#5357B6"/></svg>
-                        reply
-                        </ReplyBtnDown>
-                    </CommentBtnDown>
-                </CommentFooter>
-            </CommentBOdy>
-            </Commentsinside>
-            {replyToComment === comment.id && (
-                 <AddComment>
-                 <ProfilePic style={{backgroundImage:`url(${currentUser})`}}></ProfilePic>
-                 <AddCommenttextArea  onChange={(e) => setNewComment(e.target.value)}>{"@"+comment.user.username + ","}</AddCommenttextArea>
-                 <SendBtnCont>
-                     <ProfilePicDown style={{backgroundImage:`url(${currentUser})`}}></ProfilePicDown>
-                     <AddBtrn onClick={() => addReplyToComment(comment.id)}>add</AddBtrn>
-                 </SendBtnCont>
-             </AddComment>
-            )}
+      {commentData.comments.map((comment) => (
         
-        {comment.replies.map((reply) => (
-                    <ReplyCOntainer key={reply.id}>
-                    <CommentCont>
-                        <Commentsinside>
-                        <CommentVotes>
-                    <PlusAndMinusBtn>
-                    <svg width="11" height="11" xmlns="http://www.w3.org/2000/svg"><path d="M6.33 10.896c.137 0 .255-.05.354-.149.1-.1.149-.217.149-.354V7.004h3.315c.136 0 .254-.05.354-.149.099-.1.148-.217.148-.354V5.272a.483.483 0 0 0-.148-.354.483.483 0 0 0-.354-.149H6.833V1.4a.483.483 0 0 0-.149-.354.483.483 0 0 0-.354-.149H4.915a.483.483 0 0 0-.354.149c-.1.1-.149.217-.149.354v3.37H1.08a.483.483 0 0 0-.354.15c-.1.099-.149.217-.149.353v1.23c0 .136.05.254.149.353.1.1.217.149.354.149h3.333v3.39c0 .136.05.254.15.353.098.1.216.149.353.149H6.33Z" fill="#C5C6EF"/></svg>
+        <CommentContainer key={comment.id}>
+          <Comments
+            setReplyToComment={setReplyToComment}
+            score={comment.score}
+            img={comment.user.image.png}
+            username={comment.user.username}
+            created={comment.createdAt}
+            content={comment.content}
+            replyToComment={replyToComment}
+            id={comment.id}
+          />
+          {/**comment add */}
+          <CommentAdd
+            replyToComment={replyToComment}
+            id={comment.id}
+            username={comment.user.username}
+            currentUser={currentUser}
+            setNewComment={setNewComment}
+            addReplyToComment={addReplyToComment}
+          />
+          {/**replies */}
+          {comment.replies.map((reply) => (
+            <React.Fragment key={reply.id} >
+            <Reply
+              replyId={reply.id}
+              userImg={reply.user.image.png}
+              username={reply.user.username}
+              editing={reply.isEditing}
+              handleReplyEdits={handleReplyEdits}
+              commentId={comment.id}
+              content={reply.content}
+              handleReplySave={handleReplySave}
+              handleReplyEdit={handleReplyEdit}
+              replyToComment={replyToComment}
+              setReplyToComment={setReplyToComment}
+              created={reply.createdAt}
+              setIsOpenModal={setIsOpenModal}
+              handleReplyDelete={handleReplyDelete}
+            />
+                  {isOpenModal && (
+        <DelateModal handleConfirmDelete={handleConfirmDelete} commentId={comment.id} replyId={reply.id} setIsOpenModal={setIsOpenModal}/>
+      )}
+            </React.Fragment>
+          ))}
         
-                    </PlusAndMinusBtn>
-                    <VotesCouter>
-                        0
-                    </VotesCouter>
-                    <PlusAndMinusBtn>
-                    <svg width="11" height="3" xmlns="http://www.w3.org/2000/svg"><path d="M9.256 2.66c.204 0 .38-.056.53-.167.148-.11.222-.243.222-.396V.722c0-.152-.074-.284-.223-.395a.859.859 0 0 0-.53-.167H.76a.859.859 0 0 0-.53.167C.083.437.009.57.009.722v1.375c0 .153.074.285.223.396a.859.859 0 0 0 .53.167h8.495Z" fill="#C5C6EF"/></svg>
+        </CommentContainer>
+     
         
-                    </PlusAndMinusBtn>
-                </CommentVotes>
-                <CommentBOdy>
-                    <CommentHeader>
-                        <ProfilePIc style={{backgroundImage:`url(${currentUser})`}}></ProfilePIc>
-                        <Username>{reply.user.username}</Username>
-                        <YouTag>you</YouTag>
-                        <CommentPostedTime>secs ago</CommentPostedTime>
-                    </CommentHeader>
-                    <CommentContent>
-                       {reply.content}
-                    </CommentContent>
-                    <CommentFooter>
-                        <CommentVotesDown>
-                        <PlusAndMinusBtn>
-                    <svg width="11" height="11" xmlns="http://www.w3.org/2000/svg"><path d="M6.33 10.896c.137 0 .255-.05.354-.149.1-.1.149-.217.149-.354V7.004h3.315c.136 0 .254-.05.354-.149.099-.1.148-.217.148-.354V5.272a.483.483 0 0 0-.148-.354.483.483 0 0 0-.354-.149H6.833V1.4a.483.483 0 0 0-.149-.354.483.483 0 0 0-.354-.149H4.915a.483.483 0 0 0-.354.149c-.1.1-.149.217-.149.354v3.37H1.08a.483.483 0 0 0-.354.15c-.1.099-.149.217-.149.353v1.23c0 .136.05.254.149.353.1.1.217.149.354.149h3.333v3.39c0 .136.05.254.15.353.098.1.216.149.353.149H6.33Z" fill="#C5C6EF"/></svg>
-        
-                    </PlusAndMinusBtn>
-                    <VotesCouter>
-                        0
-                    </VotesCouter>
-                    <PlusAndMinusBtn>
-                    <svg width="11" height="3" xmlns="http://www.w3.org/2000/svg"><path d="M9.256 2.66c.204 0 .38-.056.53-.167.148-.11.222-.243.222-.396V.722c0-.152-.074-.284-.223-.395a.859.859 0 0 0-.53-.167H.76a.859.859 0 0 0-.53.167C.083.437.009.57.009.722v1.375c0 .153.074.285.223.396a.859.859 0 0 0 .53.167h8.495Z" fill="#C5C6EF"/></svg>
-        
-                    </PlusAndMinusBtn>
-                        </CommentVotesDown>
-                        <CommentBtnDown>
-                          <DElateBtn>
-                          <svg width="12" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M1.167 12.448c0 .854.7 1.552 1.555 1.552h6.222c.856 0 1.556-.698 1.556-1.552V3.5H1.167v8.948Zm10.5-11.281H8.75L7.773 0h-3.88l-.976 1.167H0v1.166h11.667V1.167Z" fill="#ED6368"/></svg>
-                          Delete
-                          </DElateBtn>
-                          <ReplyBtnDown>
-                          <svg width="14" height="14" xmlns="http://www.w3.org/2000/svg"><path d="M13.479 2.872 11.08.474a1.75 1.75 0 0 0-2.327-.06L.879 8.287a1.75 1.75 0 0 0-.5 1.06l-.375 3.648a.875.875 0 0 0 .875.954h.078l3.65-.333c.399-.04.773-.216 1.058-.499l7.875-7.875a1.68 1.68 0 0 0-.061-2.371Zm-2.975 2.923L8.159 3.449 9.865 1.7l2.389 2.39-1.75 1.706Z" fill="#5357B6"/></svg>
-                          Edit
-                          </ReplyBtnDown>
-                        </CommentBtnDown>
-                    </CommentFooter>
-                </CommentBOdy>
-                        </Commentsinside>
-                    </CommentCont>
-                </ReplyCOntainer>
-            ))}
+      ))}
+     <CommentContainer>
+     <AddComment>
+              <ProfilePic
+                style={{ backgroundImage: `url(${currentUser})` }}
+              ></ProfilePic>
+              <AddCommenttextArea
+                onChange={(e) => setGlobalContent(e.target.value)}
+                />
+               
+              
+              <SendBtnCont>
+                <ProfilePicDown
+                  style={{ backgroundImage: `url(${currentUser})` }}
+                ></ProfilePicDown>
+                <AddBtrn onClick={addGlobalComment}>
+                  add
+                </AddBtrn>
+              </SendBtnCont>
+            </AddComment>
             </CommentContainer>
-    
-          
-        ))}
     </Mains>
-  )
+  );
 }
 
-export default Main
+export default Main;
+//generating unique id
+function generateNumericId(desiredLength: number) {
+  const numbers = "0123456789";
+  let id = "";
 
-function generateNumericId(desiredLength:number) {
-    const numbers = '0123456789';
-    let id = '';
-  
-    for (let i = 0; i < desiredLength; i++) {
-      const randomIndex = Math.floor(Math.random() * numbers.length);
-      id += numbers[randomIndex];
-    }
-  
-    return Number(id);
+  for (let i = 0; i < desiredLength; i++) {
+    const randomIndex = Math.floor(Math.random() * numbers.length);
+    id += numbers[randomIndex];
   }
+
+  return Number(id);
+}
