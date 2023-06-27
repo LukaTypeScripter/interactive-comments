@@ -61,7 +61,7 @@ export const data = {
             "replyingTo": "ramsesmiron",
             "user": {
               "image": { 
-                "png": "./images/avatars/image-juliusomo.png",
+                "png": `${currentUser}`,
                 "webp": "./images/avatars/image-juliusomo.webp"
               },
               "username": "juliusomo"
