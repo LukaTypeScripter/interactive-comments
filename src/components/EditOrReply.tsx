@@ -25,7 +25,7 @@ function EditOrReply({replyToComment,id,username,setReplyToComment}:Props) {
           Delete
         </DElateBtn>
         {
-         username !== "juliusomo" ? (
+         username === "juliusomo" ? (
           <ReplyBtnDown
            
           >
