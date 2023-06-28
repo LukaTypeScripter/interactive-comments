@@ -6,7 +6,7 @@ interface Props {
     setIsOpenModal: React.Dispatch<React.SetStateAction<boolean>>
     handleConfirmDelete:() => void
 }
-function DelateModal({commentId,replyId,setIsOpenModal,handleConfirmDelete}:Props) {
+function DelateModal({setIsOpenModal,handleConfirmDelete}:Props) {
     
   return (
     <ConfirmWrapper>
