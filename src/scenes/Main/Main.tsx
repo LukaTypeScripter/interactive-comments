@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { AddBtrn, AddComment, AddCommenttextArea, CommentContainer, Mains, ProfilePic, ProfilePicDown, SendBtnCont } from "./styles/main";
+import {
+  AddBtrn,
+  AddComment,
+  AddCommenttextArea,
+  CommentContainer,
+  Mains,
+  ProfilePic,
+  ProfilePicDown,
+  SendBtnCont,
+} from "./styles/main";
 import { data } from "../../../data";
 import currentUser from "../../images/avatars/image-juliusomo.png";
 import Comments from "../comments/Comments";
@@ -45,11 +54,12 @@ function Main() {
   const [commentData, setCommentData] = useState<CommentData>(data);
   const [replyToComment, setReplyToComment] = useState(0);
   const [newComment, setNewComment] = useState("");
-  const [isOpenModal,setIsOpenModal] = useState(false);
+  const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedCommentId, setSelectedCommentId] = useState(0);
   const [selectedReplyId, setSelectedReplyId] = useState(0);
-  const [selectedReplyToDelete, setSelectedReplyToDelete] = useState<Reply | null>(null);
-  const [globalContent,setGlobalContent] = useState("")
+  const [selectedReplyToDelete, setSelectedReplyToDelete] =
+    useState<Reply | null>(null);
+  const [globalContent, setGlobalContent] = useState("");
   //create new Reply
   const addReplyToComment = (commentId: number) => {
     setSelectedCommentId(commentId);
@@ -67,7 +77,7 @@ function Main() {
       },
       replyingTo: commentId.toString(),
     };
-    setSelectedReplyId(newReply.id)
+    setSelectedReplyId(newReply.id);
     setCommentData((prevData) => {
       const updatedComments = prevData.comments.map((comment) => {
         if (comment.id === commentId) {
@@ -87,7 +97,7 @@ function Main() {
     setNewComment("");
   };
 
-//added new properity in my json isEditing
+  //added new properity in my json isEditing
   const handleReplyEdit = (commentId: number, replyId: number) => {
     setCommentData((prevData) => {
       const updatedComments = prevData.comments.map((comment) => {
@@ -123,7 +133,7 @@ function Main() {
       return { ...prevData, comments: updatedComments };
     });
   };
-//editing previes values
+  //editing previes values
   const handleReplyEdits = (
     commentId: number,
     replyId: number,
@@ -145,7 +155,7 @@ function Main() {
       return { ...prevData, comments: updatedComments };
     });
   };
-  //findinf selected comment and reply 
+  //findinf selected comment and reply
   const handleReplyDelete = (commentId: number, replyId: number) => {
     const selectedComment = commentData.comments.find(
       (comment) => comment.id === commentId
@@ -159,7 +169,7 @@ function Main() {
       setIsOpenModal(true);
     }
   };
-  //delating selected reply 
+  //delating selected reply
   const handleConfirmDelete = () => {
     if (selectedReplyToDelete) {
       const commentId = selectedCommentId;
@@ -205,11 +215,10 @@ function Main() {
 
     setGlobalContent("");
   };
-  
+
   return (
     <Mains>
       {commentData.comments.map((comment) => (
-        
         <CommentContainer key={comment.id}>
           <Comments
             setReplyToComment={setReplyToComment}
@@ -220,6 +229,7 @@ function Main() {
             content={comment.content}
             replyToComment={replyToComment}
             id={comment.id}
+            
           />
           {/**comment add */}
           <CommentAdd
@@ -232,53 +242,53 @@ function Main() {
           />
           {/**replies */}
           {comment.replies.map((reply) => (
-            <React.Fragment key={reply.id} >
-            <Reply
-              replyId={reply.id}
-              userImg={reply.user.image.png}
-              username={reply.user.username}
-              editing={reply.isEditing}
-              handleReplyEdits={handleReplyEdits}
-              commentId={comment.id}
-              content={reply.content}
-              handleReplySave={handleReplySave}
-              handleReplyEdit={handleReplyEdit}
-              replyToComment={replyToComment}
-              setReplyToComment={setReplyToComment}
-              created={reply.createdAt}
-              setIsOpenModal={setIsOpenModal}
-              handleReplyDelete={handleReplyDelete}
-            />
-                  {isOpenModal && (
-        <DelateModal handleConfirmDelete={handleConfirmDelete} commentId={comment.id} replyId={reply.id} setIsOpenModal={setIsOpenModal}/>
-      )}
+            <React.Fragment key={reply.id}>
+              <Reply
+                replyId={reply.id}
+                userImg={reply.user.image.png}
+                username={reply.user.username}
+                editing={reply.isEditing}
+                handleReplyEdits={handleReplyEdits}
+                commentId={comment.id}
+                content={reply.content}
+                handleReplySave={handleReplySave}
+                handleReplyEdit={handleReplyEdit}
+                replyToComment={replyToComment}
+                setReplyToComment={setReplyToComment}
+                created={reply.createdAt}
+                setIsOpenModal={setIsOpenModal}
+                handleReplyDelete={handleReplyDelete}
+                 score={reply.score}
+              />
+              {isOpenModal && (
+                <DelateModal
+                  handleConfirmDelete={handleConfirmDelete}
+                  commentId={comment.id}
+                  replyId={reply.id}
+                  setIsOpenModal={setIsOpenModal}
+                />
+              )}
             </React.Fragment>
           ))}
-        
         </CommentContainer>
-     
-        
       ))}
-     <CommentContainer>
-     <AddComment>
-              <ProfilePic
-                style={{ backgroundImage: `url(${currentUser})` }}
-              ></ProfilePic>
-              <AddCommenttextArea
-                onChange={(e) => setGlobalContent(e.target.value)}
-                />
-               
-              
-              <SendBtnCont>
-                <ProfilePicDown
-                  style={{ backgroundImage: `url(${currentUser})` }}
-                ></ProfilePicDown>
-                <AddBtrn onClick={addGlobalComment}>
-                  add
-                </AddBtrn>
-              </SendBtnCont>
-            </AddComment>
-            </CommentContainer>
+      <CommentContainer>
+        <AddComment>
+          <ProfilePic
+            style={{ backgroundImage: `url(${currentUser})` }}
+          ></ProfilePic>
+          <AddCommenttextArea
+            onChange={(e) => setGlobalContent(e.target.value)}
+          />
+
+          <SendBtnCont>
+            <ProfilePicDown
+              style={{ backgroundImage: `url(${currentUser})` }}
+            ></ProfilePicDown>
+            <AddBtrn onClick={addGlobalComment}>add</AddBtrn>
+          </SendBtnCont>
+        </AddComment>
+      </CommentContainer>
     </Mains>
   );
 }
