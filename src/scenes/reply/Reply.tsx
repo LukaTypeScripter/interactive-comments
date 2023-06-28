@@ -1,5 +1,5 @@
 import React from 'react'
-import { ReplyCOntainer, CommentCont, Commentsinside, CommentVotes, CommentBOdy, CommentHeader, ProfilePIc, Username, YouTag, CommentPostedTime, CommentContent, AddCommenttextArea, CommentFooter, CommentVotesDown, CommentBtnDown, DElateBtn, ReplyBtnDown, CommentBtn, ReplyBtn } from '../Main/styles/main'
+import { ReplyCOntainer, CommentCont, Commentsinside, CommentVotes, CommentBOdy, CommentHeader, ProfilePIc, Username, YouTag, CommentPostedTime, CommentContent, AddCommenttextArea, CommentFooter, CommentVotesDown, CommentBtnDown, DElateBtn, ReplyBtnDown, CommentBtn } from '../Main/styles/main'
 import CommentVotesComponent from '../../components/CommentVotes'
 import CommentVotesDownComponent from '../../components/CommentVotesDown'
 interface Props {

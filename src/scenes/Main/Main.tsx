@@ -23,7 +23,6 @@ function Main() {
   const [newComment, setNewComment] = useState("");
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [selectedCommentId, setSelectedCommentId] = useState(0);
-  const [selectedReplyId, setSelectedReplyId] = useState(0);
   const [selectedReplyToDelete, setSelectedReplyToDelete] =
     useState<Replys | null>(null);
   const [globalContent, setGlobalContent] = useState("");
@@ -44,7 +43,7 @@ function Main() {
       },
       replyingTo: commentId.toString(),
     };
-    setSelectedReplyId(newReply.id);
+  
     setCommentData((prevData) => {
       const updatedComments = prevData.comments.map((comment) => {
         if (comment.id === commentId) {
