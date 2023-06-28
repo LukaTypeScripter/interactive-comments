@@ -15,40 +15,7 @@ import Comments from "../comments/Comments";
 import CommentAdd from "../CommentAdd/CommentAdd";
 import Reply from "../reply/Reply";
 import DelateModal from "../DelateModal/DelateModal";
-
-type Image = {
-  png: string;
-  webp: string;
-};
-
-type User = {
-  image: Image;
-  username: string;
-};
-
-type Reply = {
-  id: number;
-  content: string;
-  createdAt: string;
-  score: number;
-  replyingTo?: string;
-  user: User;
-  isEditing?: boolean;
-};
-
-type Comment = {
-  id: number;
-  content: string;
-  createdAt: string;
-  score: number;
-  user: User;
-  replies: Reply[];
-};
-
-type CommentData = {
-  currentUser: User;
-  comments: Comment[];
-};
+import { CommentData,Replys } from "./interfaces";
 
 function Main() {
   const [commentData, setCommentData] = useState<CommentData>(data);
@@ -58,7 +25,7 @@ function Main() {
   const [selectedCommentId, setSelectedCommentId] = useState(0);
   const [selectedReplyId, setSelectedReplyId] = useState(0);
   const [selectedReplyToDelete, setSelectedReplyToDelete] =
-    useState<Reply | null>(null);
+    useState<Replys | null>(null);
   const [globalContent, setGlobalContent] = useState("");
   //create new Reply
   const addReplyToComment = (commentId: number) => {
