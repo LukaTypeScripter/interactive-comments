@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import  { useState } from 'react'
 import { PlusAndMinusBtn, VotesCouter } from './styles/commentVotes';
 interface props {
     score: number
